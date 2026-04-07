@@ -29,7 +29,7 @@ import SuggestedUsers from './pages/SuggestedUsers'
 import Following from './pages/Following'
 import Followers from './pages/Followers'
 
-export const servalUrl = 'http://localhost:5000'
+export const servalUrl = import.meta.env.VITE_BACKEND_URL;
 
 const App = () => {
   getCurrentUser()
@@ -66,9 +66,20 @@ const App = () => {
   }, [userData])
 
 
-    socket?.on("newNotification", (noti) => {
-      dispatch(setNotificationsData([...notificationsData, noti]))
-    })
+useEffect(() => {
+    if (userData && socket) {
+      // Notification listener ko yahan handle karein
+      socket.on("newNotification", (noti) => {
+        // Redux state update karte waqt hamesha previous state ka dhyan rakhein
+        dispatch(setNotificationsData([...notificationsData, noti]));
+      });
+
+      // Cleanup: Component unmount hone par listener hata dein
+      return () => {
+        socket.off("newNotification");
+      };
+    }
+}, [socket, notificationsData, userData, dispatch]);
   
 
   return (
