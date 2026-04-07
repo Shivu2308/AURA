@@ -229,16 +229,16 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
-  port: 587,  // or 465
-  secure: false, // 465 ke liye true, 587 ke liye false
+  port: 465,  // or 465
+  secure: true, // 465 ke liye true, 587 ke liye false
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
   },
   // Connection stability ke liye ye settings zaroori hain:
-  connectionTimeout: 10000, // 10 seconds wait karega connect hone ke liye
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  connectionTimeout: 60000, // 10 seconds wait karega connect hone ke liye
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 
   // Ye line Render/Production ke liye zaroori hai
   tls: {
