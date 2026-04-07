@@ -218,12 +218,32 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Transporter Setup
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL,      // Aapka Gmail (e.g., heyaura23@gmail.com)
+//     pass: process.env.EMAIL_PASS, // Aapka 16-digit Google App Password
+//   },
+// });
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,  // or 465
+  secure: false, // 465 ke liye true, 587 ke liye false
   auth: {
-    user: process.env.EMAIL,      // Aapka Gmail (e.g., heyaura23@gmail.com)
-    pass: process.env.EMAIL_PASS, // Aapka 16-digit Google App Password
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
   },
+  // Connection stability ke liye ye settings zaroori hain:
+  connectionTimeout: 10000, // 10 seconds wait karega connect hone ke liye
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+
+  // Ye line Render/Production ke liye zaroori hai
+  tls: {
+    rejectUnauthorized: false 
+  }
 });
 
 /**
