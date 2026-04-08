@@ -229,21 +229,26 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
-  port: 465,  // or 465
-  secure: true, // 465 ke liye true, 587 ke liye false
+  port: 465, 
+  secure: true, // 465 ke liye hamesha true
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
   },
-  // Connection stability ke liye ye settings zaroori hain:
-  connectionTimeout: 60000, // 10 seconds wait karega connect hone ke liye
-  greetingTimeout: 60000,
-  socketTimeout: 60000,
-
-  // Ye line Render/Production ke liye zaroori hai
+  // Render ke liye extra connection time
+  connectionTimeout: 20000, 
+  greetingTimeout: 20000,
+  socketTimeout: 20000,
   tls: {
-    rejectUnauthorized: false 
+    // Ye line server certificate errors ko bypass karti hai
+    rejectUnauthorized: true,
+    minVersion: "TLSv1.2"
   }
+});
+
+transporter.verify((error, success) => {
+  if (error) console.error("Mailer config error:", error);
+  else console.log("Mailer ready ✓");
 });
 
 /**
