@@ -229,10 +229,10 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   // service: "gmail",
   host: "smtp-relay.brevo.com",
-  port: 587, 
+  port: 2525, 
   secure: false, // 587 ke liye false
   auth: {
-    // user: process.env.EMAIL,
+    // user: process.env.AURA_EMAIL,
     // pass: process.env.EMAIL_PASS,
 
     // Brevo SMTP credentials
