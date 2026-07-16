@@ -227,13 +227,14 @@ dotenv.config();
 // });
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465, 
-  secure: true, // 465 ke liye hamesha true
+  // service: "gmail",
+  host: "smtp-relay.brevo.com",
+  port: 587, 
+  secure: false, // 587 ke liye false
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS,
+    // pass: process.env.EMAIL_PASS,
+    pass: process.env.SMTP_KEY, // Brevo SMTP Key
   },
   // Render ke liye extra connection time
   connectionTimeout: 20000, 
@@ -241,8 +242,7 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 20000,
   tls: {
     // Ye line server certificate errors ko bypass karti hai
-    rejectUnauthorized: true,
-    minVersion: "TLSv1.2"
+    rejectUnauthorized: false,
   }
 });
 
