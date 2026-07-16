@@ -236,7 +236,7 @@ const transporter = nodemailer.createTransport({
     // pass: process.env.EMAIL_PASS,
 
     // Brevo SMTP credentials
-    user: "9941c2001@smtp-brevo.com",
+    user: process.env.EMAIL, // Brevo verified email
     pass: process.env.SMTP_KEY, // Brevo SMTP Key
   },
   // Render ke liye extra connection time
