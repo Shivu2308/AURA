@@ -226,6 +226,8 @@ dotenv.config();
 //   },
 // });
 
+console.log("📧 Mail.js Loaded");
+
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
@@ -235,6 +237,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.BREVO_SMTP_KEY,
   },
 });
+
+console.log("📧 Creating Brevo transporter...");
 
 // const transporter = nodemailer.createTransport({
 //   // service: "gmail",
