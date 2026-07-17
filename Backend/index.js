@@ -17,23 +17,11 @@ dotenv.config();
 
 
 const port = process.env.PORT
-const allowedOrigins = [
-    'https://aura-eight-jet.vercel.app', 
-    'http://localhost:5173'
-];
-
 app.use(cors({
-    origin: function (origin, callback) {
-        // !origin ka matlab hai server-to-server request (kabhi kabhi needed hota hai)
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
+    origin : process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials:true,
     methods: ["GET", "POST", "PUT", "DELETE"]
-}));
+}))
 
 
 app.use(express.json());
