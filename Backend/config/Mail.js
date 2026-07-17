@@ -246,6 +246,10 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+console.log("AURA_EMAIL:", process.env.AURA_EMAIL);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+console.log("EMAIL_PASS length:", process.env.EMAIL_PASS?.length);
+
 transporter.verify((error, success) => {
   if (error) console.error("Mailer config error:", error);
   else console.log("Mailer ready ✓");
