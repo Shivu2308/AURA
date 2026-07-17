@@ -227,33 +227,46 @@ dotenv.config();
 // });
 
 const transporter = nodemailer.createTransport({
-  // service: "gmail",
-  host: "smtp.gmail.com",
+  host: "smtp-relay.brevo.com",
   port: 587,
   secure: false,
-  requireTLS: true,
   auth: {
-    user: process.env.AURA_EMAIL,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_SMTP_KEY,
   },
-  // Render ke liye extra connection time
-  connectionTimeout: 20000, 
-  greetingTimeout: 20000,
-  socketTimeout: 20000,
-  tls: {
-    // Ye line server certificate errors ko bypass karti hai
-    rejectUnauthorized: true,
-    minVersion: "TLSv1.2"
-  }
 });
 
-console.log("AURA_EMAIL:", process.env.AURA_EMAIL);
-console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
-console.log("EMAIL_PASS length:", process.env.EMAIL_PASS?.length);
+// const transporter = nodemailer.createTransport({
+//   // service: "gmail",
+//   host: "smtp.gmail.com",
+//   port: 587,
+//   secure: false,
+//   requireTLS: true,
+//   auth: {
+//     user: process.env.AURA_EMAIL,
+//     pass: process.env.EMAIL_PASS,
+//   },
+//   // Render ke liye extra connection time
+//   connectionTimeout: 20000, 
+//   greetingTimeout: 20000,
+//   socketTimeout: 20000,
+//   tls: {
+//     // Ye line server certificate errors ko bypass karti hai
+//     rejectUnauthorized: true,
+//     minVersion: "TLSv1.2"
+//   }
+// });
 
-transporter.verify((error, success) => {
-  if (error) console.error("Mailer config error:", error);
-  else console.log("Mailer ready ✓");
+// console.log("AURA_EMAIL:", process.env.AURA_EMAIL);
+// console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+// console.log("EMAIL_PASS length:", process.env.EMAIL_PASS?.length);
+
+transporter.verify((err) => {
+  if (err) {
+    console.error("Mailer config error:", err);
+  } else {
+    console.log("✅ Brevo Mailer Ready");
+  }
 });
 
 /**
@@ -262,7 +275,7 @@ transporter.verify((error, success) => {
 export const sendMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Support" <${process.env.AURA_EMAIL}>`,
+      from: `"Aura Support" <${process.env.BREVO_EMAIL}>`,
       to,
       subject: "Reset your password",
       html: `
@@ -298,7 +311,7 @@ export const sendMail = async (to, otp) => {
 export const sendVerificationMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Verification" <${process.env.AURA_EMAIL}>`,
+      from: `"Aura Verification" <${process.env.BREVO_EMAIL}>`,
       to,
       subject: "Verify your Aura Account ✅",
       html:`
