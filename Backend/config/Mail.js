@@ -261,9 +261,9 @@ console.log("📧 Creating Brevo transporter...");
 //   }
 // });
 
-// console.log("AURA_EMAIL:", process.env.AURA_EMAIL);
-// console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
-// console.log("EMAIL_PASS length:", process.env.EMAIL_PASS?.length);
+console.log("BREVO_EMAIL:", process.env.BREVO_EMAIL);
+console.log("SMTP KEY exists:", !!process.env.BREVO_SMTP_KEY);
+console.log("SMTP KEY length:", process.env.BREVO_SMTP_KEY?.length);
 
 transporter.verify((err) => {
   if (err) {
@@ -279,7 +279,7 @@ transporter.verify((err) => {
 export const sendMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Support" <${process.env.BREVO_EMAIL}>`,
+      from: `"Aura Support" <${process.env.BREVO_SENDER_EMAIL}>`,
       to,
       subject: "Reset your password",
       html: `
@@ -315,7 +315,7 @@ export const sendMail = async (to, otp) => {
 export const sendVerificationMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Verification" <${process.env.BREVO_EMAIL}>`,
+      from: `"Aura Verification" <${process.env.BREVO_SENDER_EMAIL}>`,
       to,
       subject: "Verify your Aura Account ✅",
       html:`
