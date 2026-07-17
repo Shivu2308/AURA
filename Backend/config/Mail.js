@@ -229,8 +229,9 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   // service: "gmail",
   host: "smtp.gmail.com",
-  port: 465, 
-  secure: true, // 465 ke liye hamesha true
+  port: 587,
+  secure: false,
+  requireTLS: true,
   auth: {
     user: process.env.AURA_EMAIL,
     pass: process.env.EMAIL_PASS,
