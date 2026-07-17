@@ -232,7 +232,7 @@ const transporter = nodemailer.createTransport({
   port: 465, 
   secure: true, // 465 ke liye hamesha true
   auth: {
-    user: process.env.EMAIL,
+    user: process.env.AURA_EMAIL,
     pass: process.env.EMAIL_PASS,
   },
   // Render ke liye extra connection time
