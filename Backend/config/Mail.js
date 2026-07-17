@@ -228,11 +228,11 @@ dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  // host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  host: "smtp.gmail.com",
+  port: 465, 
+  secure: true, // 465 ke liye hamesha true
   auth: {
-    user: process.env.AURA_EMAIL,
+    user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
   },
   // Render ke liye extra connection time
@@ -257,7 +257,7 @@ transporter.verify((error, success) => {
 export const sendMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Support" <${process.env.AURA_EMAIL}>`,
+      from: `"Aura Support" <${process.env.EMAIL}>`,
       to,
       subject: "Reset your password",
       html: `
@@ -293,7 +293,7 @@ export const sendMail = async (to, otp) => {
 export const sendVerificationMail = async (to, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Aura Verification" <${process.env.AURA_EMAIL}>`,
+      from: `"Aura Verification" <${process.env.EMAIL}>`,
       to,
       subject: "Verify your Aura Account ✅",
       html:`
