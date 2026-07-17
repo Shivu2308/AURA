@@ -261,7 +261,7 @@ export const sendVerificationMail = async (to, otp) => {
 };
 
 // --- 2. Password Reset ke liye ---
-export const sendMail = async (to, resetLink) => {
+export const sendMail = async (to, otp) => {
     return await sendEmailViaBrevo({
         to: to,
         subject: "Reset your Aura Password",
