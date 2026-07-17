@@ -214,89 +214,22 @@
 
 
 import nodemailer from "nodemailer";
+import SibApiV3Sdk from 'sib-api-v3-sdk';
 import dotenv from "dotenv";
 dotenv.config();
 
-// Transporter Setup
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL,      // Aapka Gmail (e.g., heyaura23@gmail.com)
-//     pass: process.env.EMAIL_PASS, // Aapka 16-digit Google App Password
-//   },
-// });
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465, 
-  secure: true, // 465 ke liye hamesha true
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS,
-  },
-  // Render ke liye extra connection time
-  connectionTimeout: 20000, 
-  greetingTimeout: 20000,
-  socketTimeout: 20000,
-  tls: {
-    // Ye line server certificate errors ko bypass karti hai
-    rejectUnauthorized: true,
-    minVersion: "TLSv1.2"
-  }
-});
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY; // Yahan wahi API key deni hai
 
-transporter.verify((error, success) => {
-  if (error) console.error("Mailer config error:", error);
-  else console.log("Mailer ready ✓");
-});
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-/**
- * 1. Password Reset Mail
- */
-export const sendMail = async (to, otp) => {
-  try {
-    const info = await transporter.sendMail({
-      from: `"Aura Support" <${process.env.EMAIL}>`,
-      to,
-      subject: "Reset your password",
-      html: `
-        <div style="font-family: Arial, sans-serif; padding:20px; background-color:#f9f9f9;">
-          <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
-            <h2 style="text-align:center; color:#4F46E5;">Aura Password Reset</h2>
-            <p style="font-size:16px; color:#333;">
-              You recently requested to reset your password. Use the OTP below to proceed:
-            </p>
-            <div style="text-align:center; margin:20px 0;">
-              <span style="font-size:24px; font-weight:bold; color:#111; letter-spacing:3px; border:2px dashed #4F46E5; padding:10px 20px; border-radius:6px; display:inline-block;">
-                ${otp}
-              </span>
-            </div>
-            <p style="font-size:15px; color:#555;">
-              ⚠️ This OTP will expire in <b>5 minutes</b>.
-            </p>
-          </div>
-        </div>
-      `,
-    });
-    console.log("✅ Password Reset Email Sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("❌ Error in sendMail:", error);
-    throw error;
-  }
-};
-
-/**
- * 2. Registration Verification Mail
- */
 export const sendVerificationMail = async (to, otp) => {
-  try {
-    const info = await transporter.sendMail({
-      from: `"Aura Verification" <${process.env.EMAIL}>`,
-      to,
-      subject: "Verify your Aura Account ✅",
-      html:`
+    return await sendEmailViaBrevo({
+        to: to,
+        subject: "Verify your Aura Account",
+        htmlContent: `<html>
          <div style="font-family: Arial, sans-serif; padding:20px; background-color:#f9f9f9;">
            <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
             
@@ -323,12 +256,165 @@ export const sendVerificationMail = async (to, otp) => {
             
            </div>
          </div>
-       `,
+       </html>`
     });
-    console.log("✅ Verification Email Sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("❌ Error in sendVerificationMail:", error);
-    throw new Error("Failed to send verification email");
-  }
 };
+
+// --- 2. Password Reset ke liye ---
+export const sendMail = async (to, resetLink) => {
+    return await sendEmailViaBrevo({
+        to: to,
+        subject: "Reset your Aura Password",
+        htmlContent: `<html><div style="font-family: Arial, sans-serif; padding:20px; background-color:#f9f9f9;">
+          <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
+            <h2 style="text-align:center; color:#4F46E5;">Aura Password Reset</h2>
+            <p style="font-size:16px; color:#333;">
+              You recently requested to reset your password. Use the OTP below to proceed:
+            </p>
+            <div style="text-align:center; margin:20px 0;">
+              <span style="font-size:24px; font-weight:bold; color:#111; letter-spacing:3px; border:2px dashed #4F46E5; padding:10px 20px; border-radius:6px; display:inline-block;">
+                ${otp}
+              </span>
+            </div>
+            <p style="font-size:15px; color:#555;">
+              ⚠️ This OTP will expire in <b>5 minutes</b>.
+            </p>
+          </div>
+        </div></html>`
+    });
+};
+
+// --- Helper Function (Common logic yahan rakhein) ---
+const sendEmailViaBrevo = async ({ to, subject, htmlContent }) => {
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    
+    sendSmtpEmail.sender = { "name": "Aura", "email": process.env.EMAIL }; // Yahan apni Verified Email daalein
+    sendSmtpEmail.to = [{ "email": to }];
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = htmlContent;
+
+    try {
+        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`✅ ${subject} sent successfully:`, data.messageId);
+        return data;
+    } catch (error) {
+        console.error("❌ API Error:", error.response?.body || error.message);
+        throw new Error("Failed to send email");
+    }
+};
+
+// Transporter Setup
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL,      // Aapka Gmail (e.g., heyaura23@gmail.com)
+//     pass: process.env.EMAIL_PASS, // Aapka 16-digit Google App Password
+//   },
+// });
+
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   host: "smtp.gmail.com",
+//   port: 465, 
+//   secure: true, // 465 ke liye hamesha true
+//   auth: {
+//     user: process.env.EMAIL,
+//     pass: process.env.EMAIL_PASS,
+//   },
+//   // Render ke liye extra connection time
+//   connectionTimeout: 20000, 
+//   greetingTimeout: 20000,
+//   socketTimeout: 20000,
+//   tls: {
+//     // Ye line server certificate errors ko bypass karti hai
+//     rejectUnauthorized: true,
+//     minVersion: "TLSv1.2"
+//   }
+// });
+
+// transporter.verify((error, success) => {
+//   if (error) console.error("Mailer config error:", error);
+//   else console.log("Mailer ready ✓");
+// });
+
+// /**
+//  * 1. Password Reset Mail
+//  */
+// export const sendMail = async (to, otp) => {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: `"Aura Support" <${process.env.EMAIL}>`,
+//       to,
+//       subject: "Reset your password",
+//       html: `
+//         <div style="font-family: Arial, sans-serif; padding:20px; background-color:#f9f9f9;">
+//           <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
+//             <h2 style="text-align:center; color:#4F46E5;">Aura Password Reset</h2>
+//             <p style="font-size:16px; color:#333;">
+//               You recently requested to reset your password. Use the OTP below to proceed:
+//             </p>
+//             <div style="text-align:center; margin:20px 0;">
+//               <span style="font-size:24px; font-weight:bold; color:#111; letter-spacing:3px; border:2px dashed #4F46E5; padding:10px 20px; border-radius:6px; display:inline-block;">
+//                 ${otp}
+//               </span>
+//             </div>
+//             <p style="font-size:15px; color:#555;">
+//               ⚠️ This OTP will expire in <b>5 minutes</b>.
+//             </p>
+//           </div>
+//         </div>
+//       `,
+//     });
+//     console.log("✅ Password Reset Email Sent:", info.messageId);
+//     return info;
+//   } catch (error) {
+//     console.error("❌ Error in sendMail:", error);
+//     throw error;
+//   }
+// };
+
+// /**
+//  * 2. Registration Verification Mail
+//  */
+// export const sendVerificationMail = async (to, otp) => {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: `"Aura Verification" <${process.env.EMAIL}>`,
+//       to,
+//       subject: "Verify your Aura Account ✅",
+//       html:`
+//          <div style="font-family: Arial, sans-serif; padding:20px; background-color:#f9f9f9;">
+//            <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
+            
+//              <h2 style="text-align:center; color:#4F46E5;">Verify your Aura Account</h2>
+            
+//              <p style="font-size:16px; color:#333;">
+//                Welcome to <b>Aura</b>! 🎉  
+//                To complete your registration, please verify your email using the OTP below:
+//              </p>
+            
+//              <div style="text-align:center; margin:20px 0;">
+//                <span style="font-size:24px; font-weight:bold; color:#111; letter-spacing:3px; border:2px dashed #4F46E5; padding:10px 20px; border-radius:6px; display:inline-block;">
+//                  ${otp}
+//                </span>
+//              </div>
+            
+//              <p style="font-size:15px; color:#555;">
+//                ⚠️ This OTP will expire in <b>5 minutes</b>. Do not share it with anyone.
+//              </p>
+            
+//              <p style="font-size:14px; color:#888; margin-top:30px; text-align:center;">
+//                Didn’t create an account? You can ignore this email.
+//              </p>
+            
+//            </div>
+//          </div>
+//        `,
+//     });
+//     console.log("✅ Verification Email Sent:", info.messageId);
+//     return info;
+//   } catch (error) {
+//     console.error("❌ Error in sendVerificationMail:", error);
+//     throw new Error("Failed to send verification email");
+//   }
+// };
