@@ -7,6 +7,12 @@ AURA is a feature-rich, MERN-stack social media web application designed with a 
 
 ---
 
+## Test credentials (ID/password)
+ID = AURA
+password - aura@1234
+
+---
+
 ## 💎 Key Features
 
 - **📱 Vibe (Short Videos/Reels):** Upload and explore short-form video content with a smooth scroll experience.
